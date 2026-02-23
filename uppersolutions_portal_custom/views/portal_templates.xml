@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="frontend_layout_hide_portal_logo" inherit_id="portal.frontend_layout">
+
+        <xpath expr="//a[hasclass('logo')]" position="attributes">
+            <attribute name="groups">!base.group_portal</attribute>
+        </xpath>
+    </template>
+</odoo>
