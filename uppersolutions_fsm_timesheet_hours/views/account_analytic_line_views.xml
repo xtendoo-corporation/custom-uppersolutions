@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Este xpath añade el botón de adjuntos a la lista de timesheets.
+        Para evitar conflictos con Odoo Studio (que reemplaza la pestaña entera de partes de horas),
+        heredamos de la vista base (project.view_task_form2) pero le asignamos una
+        prioridad muy alta (99). Esto hace que Odoo aplique nuestra modificación
+        DESPUÉS de que Studio haya reemplazado la vista.
+    -->
+    <record id="view_task_form_fsm_attachments" model="ir.ui.view">
+        <field name="name">project.task.form.fsm.timesheet.attachments</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="project.view_task_form2" />
+        <field name="priority" eval="9999" />
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='timesheet_ids']/list" position="inside">
+                <field name="attachment_number" string="Nº Adjuntos" optional="show" />
+                <button
+                    name="action_get_attachment_view"
+                    string="Adjuntos"
+                    type="object"
+                    icon="fa-paperclip"
+                />
+            </xpath>
+        </field>
+    </record>
+</odoo>
