@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="report_saleorder_document_no_brand" inherit_id="sale.report_saleorder_document">
+        <xpath expr="//div[contains(@t-if, 'any(u._is_portal() for u in doc.partner_id.user_ids)')]"
+            position="replace">
+            <!-- Removes the Odoo software connection prompt from the sale report -->
+        </xpath>
+    </template>
+</odoo>

@@ -20,7 +20,7 @@
     ],
     "assets": {
         "web.assets_backend": [
-            "uppersolutions_fsm_timesheet_hours/static/src/scss/fsm_timesheet.scss",
+            #"uppersolutions_fsm_timesheet_hours/static/src/scss/fsm_timesheet.scss",
         ],
     },
     "installable": True,
