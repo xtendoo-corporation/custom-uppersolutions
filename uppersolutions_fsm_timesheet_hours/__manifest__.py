@@ -12,10 +12,17 @@
     "depends": [
         "industry_fsm",
         "hr_timesheet",
+        "helpdesk_timesheet",
     ],
     "data": [
-        "views/account_analytic_line_views.xml",
+        "views/project_task_form_view_uppersolutions_inherit.xml",
+        #"views/account_analytic_line_views.xml",
     ],
+    "assets": {
+        "web.assets_backend": [
+            "uppersolutions_fsm_timesheet_hours/static/src/scss/fsm_timesheet.scss",
+        ],
+    },
     "installable": True,
     "auto_install": False,
 }

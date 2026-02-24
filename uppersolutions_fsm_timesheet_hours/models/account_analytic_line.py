@@ -15,7 +15,7 @@ class AccountAnalyticLine(models.Model):
     def _compute_unit_amount_from_studio_times(self, vals):
         """Compute unit_amount from x_studio_hora_inicio_1 and x_studio_hora_fina."""
         start = vals.get("x_studio_hora_inicio_1")
-        end = vals.get("x_studio_hora_fina")
+        end = vals.get("final_hour")
         if start and end:
             start_dt = fields.Datetime.to_datetime(start)
             end_dt = fields.Datetime.to_datetime(end)
@@ -30,17 +30,17 @@ class AccountAnalyticLine(models.Model):
         return super().create(vals_list)
 
     def write(self, vals):
-        if "x_studio_hora_inicio_1" in vals and "x_studio_hora_fina" in vals:
+        if "start_hour" in vals and "final_hour" in vals:
             self._compute_unit_amount_from_studio_times(vals)
-        elif "x_studio_hora_inicio_1" in vals or "x_studio_hora_fina" in vals:
+        elif "start_hour" in vals or "final_hour" in vals:
             for record in self:
                 record_vals = dict(vals)
-                if "x_studio_hora_inicio_1" not in record_vals:
-                    record_vals["x_studio_hora_inicio_1"] = (
-                        record.x_studio_hora_inicio_1
+                if "start_hour" not in record_vals:
+                    record_vals["start_hour"] = (
+                        record.start_hour
                     )
-                if "x_studio_hora_fina" not in record_vals:
-                    record_vals["x_studio_hora_fina"] = record.x_studio_hora_fina
+                if "final_hour" not in record_vals:
+                    record_vals["final_hour"] = record.final_hour
                 self._compute_unit_amount_from_studio_times(record_vals)
                 if "unit_amount" in record_vals:
                     super(AccountAnalyticLine, record).write(
@@ -48,11 +48,11 @@ class AccountAnalyticLine(models.Model):
                     )
         return super().write(vals)
 
-    @api.onchange("x_studio_hora_inicio_1", "x_studio_hora_fina")
+    @api.onchange("start_hour", "final_hour")
     def _onchange_studio_hora_inicio_fin(self):
         for record in self:
-            start = record.x_studio_hora_inicio_1
-            end = record.x_studio_hora_fina
+            start = record.start_hour
+            end = record.final_hour
             if start and end and end > start:
                 record.unit_amount = (end - start).total_seconds() / 3600.0
 
@@ -61,22 +61,29 @@ class AccountAnalyticLine(models.Model):
         compute="_compute_attachment_number",
     )
 
-    def _compute_attachment_number(self):
-        attachment_data = self.env["ir.attachment"]._read_group(
-            [("res_model", "=", self._name), ("res_id", "in", self.ids)],
-            ["res_id"],
-            ["__count"],
-        )
-        attachment_map = dict(attachment_data)
-        for line in self:
-            line.attachment_number = attachment_map.get(line.id, 0)
+    attachment_ids = fields.Many2many(
+        comodel_name="ir.attachment",
+        relation="account_analytic_line_attachment_rel",
+        column1="line_id",
+        column2="attachment_id",
+        string="Adjuntos",
+    )
 
-    def action_get_attachment_view(self):
-        self.ensure_one()
-        res = self.env["ir.actions.act_window"]._for_xml_id("base.action_attachment")
-        res["domain"] = [("res_model", "=", self._name), ("res_id", "=", self.id)]
-        res["context"] = {
-            "default_res_model": self._name,
-            "default_res_id": self.id,
-        }
-        return res
+    @api.depends("attachment_ids")
+    def _compute_attachment_number(self):
+        for line in self:
+            line.attachment_number = len(line.attachment_ids)
+
+
+
+
+    # -------------------------------------------------------
+    # Campos de studio y funcionamiento pasado a odoo normal
+    # -------------------------------------------------------
+    start_hour = fields.Datetime(
+        string="Hora Inicio",
+    )
+
+    final_hour = fields.Datetime(
+        string="Hora Fin",
+    )

@@ -1,0 +1,10 @@
+.o_list_view .o_field_widget.o_attachment_preview {
+  max-height: 75px !important;
+  overflow-y: auto !important;
+  display: block !important;
+}
+
+/* Ocultamos un padding extra si Odoo lo pone inside the widget */
+.o_list_view .o_field_widget.o_attachment_preview > div {
+  max-height: 100%;
+}
