@@ -29,3 +29,8 @@ class ProjectTask(models.Model):
         string="Fecha de Intervención",
         readonly=True,
     )
+
+    date = fields.Date(
+        related="timesheet_ids.date",
+        string="Fecha",
+    )

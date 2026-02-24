@@ -21,3 +21,10 @@ class HelpdeskTicket(models.Model):
         string="Fecha Estimada",
         store=True,
     )
+
+    #PRL Necesario
+    necessary_prl = fields.Boolean(
+        related="sale_order_id.necessary_prl",
+        string="PRL Necesario",
+        readonly=True,
+    )

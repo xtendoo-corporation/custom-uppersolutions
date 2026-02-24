@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="helpdesk_ticket_view_form_inherit_uppersolutions" model="ir.ui.view">
+        <field name="name">helpdesk.ticket.form.inherit.uppersolutions</field>
+        <field name="model">helpdesk.ticket</field>
+        <field name="inherit_id"
+            ref="helpdesk_timesheet.helpdesk_ticket_view_form_inherit_helpdesk_timesheet" />
+        <field name="arch" type="xml">
+            <xpath expr="/form//field[@name='team_id']" position="after">
+                <field name="service_to_third_parties" string="Técnico Externo" />
+                <field name="user_id" string="Técnico Asignado"
+                    invisible="not x_studio_servicio_a_terceros" />
+            </xpath>
+            <xpath expr="/form//field[@name='tag_ids']" position="after">
+                <field name="estimated_date" options="{&quot;numeric&quot;:true}"
+                    string="Fecha Intervención" />
+            </xpath>
+            <xpath expr="/form/sheet/group/group/field[@name='user_id']" position="attributes">
+                <attribute name="string">Gestionado por</attribute>
+            </xpath>
+            <xpath expr="//field[@name='email_cc']" position="after">
+                <field name="necessary_prl" />
+            </xpath>
+            <xpath expr="/form//field[@name='properties']" position="replace" />
+            <xpath
+                expr="/form//page[@name='timesheets']" position="replace" />
+            <xpath expr="/form//page[@name='extra_info']" position="after">
+                <page string="Tareas" name="tareas" invisible="service_to_third_parties">
+                    <field name="fsm_task_ids" string="Tareas"
+                        help="Tareas generadas en este Ticket">
+                        <list string="Tasks" sample="1"
+                            default_order="priority desc, sequence, state, date_deadline asc, id desc"
+                            multi_edit="1" js_class="project_enterprise_task_list"
+                            default_group_by="stage_id">
+                            <field name="sequence" readonly="1" column_invisible="True" />
+                            <field name="allow_milestones" column_invisible="True" />
+                            <field name="subtask_count" column_invisible="True" />
+                            <field name="closed_subtask_count" column_invisible="True" />
+                            <field name="id" optional="hide" options="{'enable_formatting': False}" />
+                            <field optional="show" name="date" options="{&quot;numeric&quot;:true}"
+                                string="Fecha" />
+                            <field name="name" string="Title" widget="name_with_subtask_count" />
+                            <field name="project_id" widget="project" optional="show"
+                                options="{'no_open': 1}" readonly="1"
+                                column_invisible="context.get('default_project_id')" />
+                            <field name="worksheet_template_id" optional="hide"
+                                context="{'default_res_model': 'project.task'}" />
+                            <field name="milestone_id" invisible="not allow_milestones"
+                                context="{'default_project_id': project_id}"
+                                groups="project.group_project_milestone" optional="hide"
+                                column_invisible="not context.get('allow_milestones', True)" />
+                            <field name="partner_id" optional="hide" widget="res_partner_many2one"
+                                invisible="not allow_billable" options="{'no_open': True}"
+                                column_invisible="context.get('hide_partner') or context.get('default_is_template')"
+                                context="{'res_partner_search_mode': 'customer'}" />
+                            <field name="sale_line_id" optional="hide"
+                                groups="sales_team.group_sale_salesman"
+                                options="{'no_create': True}"
+                                column_invisible="not context.get('allow_billable') or context.get('template_project')" />
+                            <field name="sale_line_id" optional="hide" options="{'no_open': True}"
+                                readonly="1" groups="!sales_team.group_sale_salesman"
+                                column_invisible="not context.get('allow_billable') or context.get('template_project')" />
+                            <field name="parent_id" optional="hide" invisible="not project_id"
+                                context="{'search_view_ref': 'project.view_task_search_form', 'search_default_project_id': project_id, 'default_project_id': project_id}"
+                                groups="base.group_no_one" />
+                            <field name="allow_billable" column_invisible="True" />
+                            <field name="user_ids" optional="show" widget="many2many_avatar_user" />
+                            <field name="company_id" groups="base.group_multi_company"
+                                optional="hide" column_invisible="context.get('default_project_id')"
+                                options="{'no_create': True}" />
+                            <field name="company_id" column_invisible="True" />
+                            <field name="date_deadline" optional="hide" widget="daterange"
+                                invisible="not project_id"
+                                options="{'start_date_field': 'planned_date_begin'}"
+                                decoration-danger="date_deadline &lt; current_date and state not in ['1_done', '1_canceled']" />
+                            <field name="planned_date_begin" column_invisible="True" />
+                            <field name="progress" column_invisible="True" />
+                            <field name="effective_hours" column_invisible="True" />
+                            <field name="allocated_hours" widget="timesheet_uom_no_toggle"
+                                sum="Total Allocated Time" optional="hide"
+                                groups="hr_timesheet.group_hr_timesheet_user"
+                                column_invisible="not context.get('allow_timesheets', True)" />
+                            <field name="effective_hours" widget="timesheet_uom"
+                                sum="Effective Hours" optional="show"
+                                invisible="effective_hours == 0"
+                                groups="hr_timesheet.group_hr_timesheet_user"
+                                column_invisible="not context.get('allow_timesheets', True) or context.get('template_project')" />
+                            <field name="subtask_effective_hours" widget="timesheet_uom"
+                                sum="Time Spent on Sub-Tasks" optional="hide"
+                                groups="hr_timesheet.group_hr_timesheet_user"
+                                column_invisible="not context.get('allow_timesheets', True) or context.get('template_project')" />
+                            <field name="total_hours_spent" widget="timesheet_uom"
+                                sum="Total Time Spent" optional="hide"
+                                groups="hr_timesheet.group_hr_timesheet_user"
+                                column_invisible="not context.get('allow_timesheets', True) or context.get('template_project')" />
+                            <field name="remaining_hours" widget="timesheet_uom"
+                                sum="Time Remaining on SO" optional="hide"
+                                decoration-danger="progress &gt;= 1"
+                                decoration-warning="progress &gt;= 0.8 and progress &lt; 1"
+                                invisible="allocated_hours == 0"
+                                groups="hr_timesheet.group_hr_timesheet_user"
+                                column_invisible="not context.get('allow_timesheets', True) or context.get('template_project')" />
+                            <field name="sale_line_id" column_invisible="True" />
+                            <!--<field
+                            name="remaining_hours_available" column_invisible="True" />
+                            <field name="remaining_hours_so"
+                                invisible="not sale_line_id or not remaining_hours_available"
+                                widget="timesheet_uom" optional="hide"
+                                groups="hr_timesheet.group_hr_timesheet_user"
+                                column_invisible="not (context.get('allow_billable', True) and context.get('allow_timesheets',
+                            True)) or context.get('template_project')" />
+                            -->
+                            <field name="progress" widget="project_task_progressbar"
+                                avg="Average of Progress" optional="show"
+                                groups="hr_timesheet.group_hr_timesheet_user"
+                                invisible="allocated_hours == 0"
+                                options="{'overflow_class': 'bg-danger'}"
+                                column_invisible="not context.get('allow_timesheets', True) or context.get('template_project')" />
+                            <field name="priority" widget="priority" optional="show" width="70px" />
+                            <field name="activity_ids" string="Next Activity" widget="list_activity"
+                                optional="show" />
+                            <field name="my_activity_date_deadline" string="My Deadline"
+                                widget="remaining_days" optional="hide" />
+                            <field name="rating_active" column_invisible="True" />
+                            <field name="rating_last_text" string="Rating"
+                                decoration-danger="rating_last_text == 'ko'"
+                                decoration-warning="rating_last_text == 'ok'"
+                                decoration-success="rating_last_text == 'top'"
+                                invisible="not rating_active or rating_last_text == 'none'"
+                                class="fw-bold" widget="badge" optional="hide"
+                                column_invisible="context.get('template_project')" />
+                            <field name="tag_ids" widget="many2many_tags"
+                                options="{'color_field': 'color'}" optional="show"
+                                context="{'project_id': project_id}" />
+                            <field name="create_date" optional="hide" />
+                            <field name="date_last_stage_update" optional="hide"
+                                column_invisible="context.get('template_project')" />
+                            <field name="state" widget="project_task_state_selection" nolabel="1"
+                                width="20px" options="{'is_toggle_mode': false}" />
+                            <field name="stage_id_color" column_invisible="1" />
+                            <field name="is_rotting" column_invisible="True" />
+                            <field name="rotting_days" column_invisible="True" />
+                            <field name="stage_id"
+                                column_invisible="context.get('set_visible', False)" optional="show"
+                                widget="badge_rotting" options="{'color_field': 'stage_id_color'}" />
+                            <field name="personal_stage_type_id" string="Personal Stage"
+                                optional="hide" column_invisible="context.get('template_project')" />
+                            <field name="task_properties" />
+                            <field name="recurrence_id" column_invisible="True" />
+                        </list>
+                    </field>
+                </page>
+                <page string="Partes de Terceros" name="parte_de_terceros"
+                    invisible="not service_to_third_parties">
+                    <field name="timesheet_ids">
+                        <list editable="top" string="Timesheet Activities" sample="1"
+                            decoration-muted="readonly_timesheet == True">
+                            <field name="readonly_timesheet" column_invisible="True" />
+                            <field optional="show" name="start_hour"
+                                options="{&quot;numeric&quot;:true}" />
+                            <field optional="show" name="final_hour"
+                                options="{&quot;numeric&quot;:true}" />
+                            <field name="employee_id" column_invisible="0"
+                                readonly="readonly_timesheet" required="1"
+                                widget="many2one_avatar_employee" context="{'active_test': True}" />
+                            <field name="has_helpdesk_team" column_invisible="True" />
+                            <field name="helpdesk_ticket_id"
+                                invisible="not has_helpdesk_team or task_id"
+                                readonly="readonly_timesheet" optional="hide"
+                                groups="helpdesk_timesheet.group_use_helpdesk_timesheet"
+                                context="{'default_project_id': project_id}" />
+                            <field name="helpdesk_ticket_id" column_invisible="True" />
+                            <field name="name" optional="show" required="0"
+                                readonly="readonly_timesheet" />
+                            <!--<field
+                            name="commercial_partner_id" column_invisible="True"
+                                groups="sales_team.group_sale_salesman" />
+                            <field name="is_so_line_edited" column_invisible="True"
+                                groups="sales_team.group_sale_salesman" />
+                            <field name="allow_billable" column_invisible="True"
+                                groups="sales_team.group_sale_salesman" />-->
+                            <field name="so_line" widget="so_line_field" optional="show"
+                                options="{'no_create': True, 'no_open': True}"
+                                context="{'create': False, 'edit': False, 'delete': False}"
+                                readonly="readonly_timesheet"
+                                column_invisible="context.get('hide_so_line')"
+                                placeholder="Non-billable" groups="sales_team.group_sale_salesman" />
+                            <field name="unit_amount" string="Time Spent" optional="show"
+                                widget="timesheet_uom" sum="Total"
+                                readonly="id and (readonly_timesheet or timer_start)"
+                                decoration-danger="unit_amount &gt; 24 or unit_amount &lt; 0"
+                                decoration-muted="unit_amount == 0" />
+                            <field name="attachment_number" string="Nº Adjuntos" optional="show" />
+                            <field name="attachment_ids" widget="many2many_binary"
+                                string="Adjuntos" icon="fa-paperclip"
+                            />
+                            <field name="company_id" column_invisible="True" />
+                            <field name="user_id" column_invisible="True" />
+                            <field name="is_timer_running" column_invisible="True" />
+                            <field name="timer_start" column_invisible="True" />
+                            <field name="display_timer" column_invisible="True" />
+                        </list>
+                        <form string="Analytic Item">
+                            <field name="company_id" invisible="1" />
+                            <sheet name="shett_analytic_item">
+                                <group name="group_analytic_item">
+                                    <group name="analytic_item" string="Analytic Item">
+                                        <field name="name" />
+                                        <field name="account_id" />
+                                        <field name="date" />
+                                        <field name="company_id" groups="base.group_multi_company" />
+                                    </group>
+                                    <group name="amount" string="Amount">
+                                        <field name="amount" />
+                                        <field name="ref" />
+                                        <field name="partner_id" />
+                                        <field name="unit_amount" />
+                                        <field name="product_id" />
+                                        <field name="product_uom_id" class="oe_inline" />
+                                        <field name="currency_id" invisible="1" />
+                                    </group>
+                                    <group />
+                                    <!-- put Accounting group under Amount group -->
+                                    <group name="accounting" string="Accounting">
+                                        <field name="move_line_id" options="{'no_create': True}"
+                                            widget="line_open_move_widget" />
+                                        <field name="general_account_id" readonly="move_line_id" />
+                                    </group>
+                                </group>
+                            </sheet>
+                        </form>
+                    </field>
+                </page>
+            </xpath>
+            <xpath expr="/form//page[@name='extra_info']" position="attributes">
+                <attribute name="invisible">False</attribute>
+            </xpath>
+        </field>
+    </record>
+</odoo>

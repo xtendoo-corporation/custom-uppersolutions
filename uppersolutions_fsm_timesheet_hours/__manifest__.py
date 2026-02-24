@@ -6,7 +6,7 @@
     "summary": "Calcula automáticamente el tiempo dedicado (Time Spent) "
     "a partir de los campos Hora Inicio y Hora Fin, y permite adjuntar "
     "archivos en los partes de horas de Servicio de Campo.",
-    "author": "UpperSolutions",
+    "author": "Abraham (Xtendoo)",
     "license": "AGPL-3",
     "category": "Field Service",
     "depends": [
@@ -16,6 +16,7 @@
     ],
     "data": [
         "views/project_task_form_view_uppersolutions_inherit.xml",
+        "views/helpdesk_ticket_form.xml",
         #"views/account_analytic_line_views.xml",
     ],
     "assets": {
