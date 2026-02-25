@@ -58,8 +58,9 @@
                             <field name="attachment_number" string="Nº Adjuntos" optional="show" />
                             <field name="attachment_ids" widget="many2many_binary"
                                 string="Adjuntos" icon="fa-paperclip"
-                               />
-                            <!--  class="o_attachment_preview" style="max-height: 80px; overflow-y: auto;"-->
+                            />
+                            <!--  class="o_attachment_preview" style="max-height: 80px; overflow-y:
+                            auto;"-->
                             <field name="company_id" column_invisible="True" />
                             <field name="user_id" column_invisible="True" />
                             <field name="is_timer_running" column_invisible="True" />
@@ -72,8 +73,9 @@
 
             <xpath expr="/form//field[@name='project_id']" position="after">
                 <field name="service_for_or_the_third_parties" />
-                <field name="ticket_manager" />
                 <field name="original_ticket" />
+                <field name="ticket_manager" />
+
             </xpath>
 
             <xpath expr="/form//field[@name='user_ids']" position="after">

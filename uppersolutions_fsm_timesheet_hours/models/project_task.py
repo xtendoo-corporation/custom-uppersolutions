@@ -18,8 +18,8 @@ class ProjectTask(models.Model):
         readonly=True
     )
 
-    original_ticket = fields.Many2one(
-        related="helpdesk_ticket_id",
+    original_ticket = fields.Char(
+        related="helpdesk_ticket_id.display_name",
         string="Ticket Original",
         readonly=True,
     )
