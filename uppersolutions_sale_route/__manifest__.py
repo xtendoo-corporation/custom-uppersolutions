@@ -8,6 +8,7 @@
     "depends": ["sale_stock"],
     "data": [
         "views/sale_order_views.xml",
+        "views/stock_picking_views.xml",
     ],
     "installable": True,
     "application": False,
