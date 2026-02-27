@@ -4,46 +4,85 @@ from odoo import api, fields, models
 class StockPicking(models.Model):
     _inherit = 'stock.picking'
 
-    related_picking_ids = fields.Many2many(
+    next_picking_id = fields.Many2one(
         'stock.picking',
-        'stock_picking_related_rel',
-        'picking_id',
-        'related_picking_id',
-        compute='_compute_related_picking_ids',
-        string='Traslados Relacionados',
+        compute='_compute_chain_picking_ids',
+        string='Siguiente Traslado',
     )
-    related_picking_count = fields.Integer(
-        compute='_compute_related_picking_ids',
-        string='Traslados Relacionados',
+    prev_picking_id = fields.Many2one(
+        'stock.picking',
+        compute='_compute_chain_picking_ids',
+        string='Traslado Anterior',
+    )
+    has_next_picking = fields.Boolean(
+        compute='_compute_chain_picking_ids',
+    )
+    has_prev_picking = fields.Boolean(
+        compute='_compute_chain_picking_ids',
     )
 
-    @api.depends('origin', 'move_ids.move_dest_ids.picking_id', 'move_ids.move_orig_ids.picking_id')
-    def _compute_related_picking_ids(self):
+    @api.depends(
+        'origin', 'location_id', 'location_dest_id',
+        'move_ids.move_dest_ids.picking_id',
+        'move_ids.move_orig_ids.picking_id',
+    )
+    def _compute_chain_picking_ids(self):
         for picking in self:
-            # Strategy 1: Use move chaining (move_dest_ids + move_orig_ids)
-            related = picking.move_ids.mapped('move_dest_ids.picking_id')
-            related |= picking.move_ids.mapped('move_orig_ids.picking_id')
-            related = related.filtered(lambda p: p.id != picking.id)
+            next_picking = self.env['stock.picking']
+            prev_picking = self.env['stock.picking']
 
-            # Strategy 2: Fallback using origin (same sale order)
-            if not related and picking.origin:
-                related = self.search([
+            # Strategy 1: move chaining (works with make_to_order)
+            next_from_moves = picking.move_ids.mapped('move_dest_ids.picking_id').filtered(
+                lambda p: p.id != picking.id
+            )
+            prev_from_moves = picking.move_ids.mapped('move_orig_ids.picking_id').filtered(
+                lambda p: p.id != picking.id
+            )
+            if next_from_moves:
+                next_picking = next_from_moves[:1]
+            if prev_from_moves:
+                prev_picking = prev_from_moves[:1]
+
+            # Strategy 2: location chain with same origin
+            if not next_picking and not prev_picking and picking.origin:
+                siblings = self.search([
                     ('origin', '=', picking.origin),
                     ('id', '!=', picking.id),
                 ])
+                # Next: sibling whose source location == current destination location
+                for sib in siblings:
+                    if sib.location_id == picking.location_dest_id:
+                        next_picking = sib
+                        break
+                # Prev: sibling whose destination location == current source location
+                for sib in siblings:
+                    if sib.location_dest_id == picking.location_id:
+                        prev_picking = sib
+                        break
 
-            picking.related_picking_ids = related
-            picking.related_picking_count = len(related)
+            picking.next_picking_id = next_picking
+            picking.prev_picking_id = prev_picking
+            picking.has_next_picking = bool(next_picking)
+            picking.has_prev_picking = bool(prev_picking)
 
-    def action_view_related_pickings(self):
+    def action_view_next_picking(self):
         self.ensure_one()
-        pickings = self.related_picking_ids
-        action = self.env["ir.actions.actions"]._for_xml_id("stock.action_picking_tree_all")
-        if len(pickings) > 1:
-            action['domain'] = [('id', 'in', pickings.ids)]
-        elif len(pickings) == 1:
-            action['views'] = [(self.env.ref('stock.view_picking_form').id, 'form')]
-            action['res_id'] = pickings.id
-        else:
-            action['domain'] = [('id', '=', False)]
-        return action
+        if self.next_picking_id:
+            return {
+                'type': 'ir.actions.act_window',
+                'res_model': 'stock.picking',
+                'res_id': self.next_picking_id.id,
+                'view_mode': 'form',
+                'views': [(self.env.ref('stock.view_picking_form').id, 'form')],
+            }
+
+    def action_view_prev_picking(self):
+        self.ensure_one()
+        if self.prev_picking_id:
+            return {
+                'type': 'ir.actions.act_window',
+                'res_model': 'stock.picking',
+                'res_id': self.prev_picking_id.id,
+                'view_mode': 'form',
+                'views': [(self.env.ref('stock.view_picking_form').id, 'form')],
+            }

@@ -1,18 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <record id="view_picking_form_related_pickings" model="ir.ui.view">
-        <field name="name">stock.picking.form.related.pickings</field>
+    <record id="view_picking_form_chain_pickings" model="ir.ui.view">
+        <field name="name">stock.picking.form.chain.pickings</field>
         <field name="model">stock.picking</field>
         <field name="inherit_id" ref="stock.view_picking_form" />
         <field name="arch" type="xml">
             <div name="button_box" position="inside">
                 <button type="object"
-                    name="action_view_related_pickings"
+                    name="action_view_prev_picking"
                     class="oe_stat_button"
-                    icon="fa-exchange"
-                    invisible="related_picking_count == 0">
-                    <field name="related_picking_count" widget="statinfo"
-                        string="Traslados Relacionados" />
+                    icon="fa-arrow-left"
+                    invisible="not has_prev_picking"
+                    string="Traslado Anterior">
+                </button>
+                <button type="object"
+                    name="action_view_next_picking"
+                    class="oe_stat_button"
+                    icon="fa-arrow-right"
+                    invisible="not has_next_picking"
+                    string="Siguiente Traslado">
                 </button>
             </div>
         </field>
