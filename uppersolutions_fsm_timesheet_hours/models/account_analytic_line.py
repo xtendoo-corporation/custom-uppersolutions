@@ -75,8 +75,6 @@ class AccountAnalyticLine(models.Model):
             line.attachment_number = len(line.attachment_ids)
 
 
-
-
     # -------------------------------------------------------
     # Campos de studio y funcionamiento pasado a odoo normal
     # -------------------------------------------------------

@@ -14,6 +14,12 @@
         <field name="priority" eval="9999" />
         <field name="arch" type="xml">
             <xpath expr="//field[@name='timesheet_ids']/list" position="inside">
+                <!-- is_so_line_edited es necesario para el widget so_line_field.
+                     Studio reemplaza la pestaña de timesheets y pierde este campo
+                     que sale_timesheet añade. Sin él, el JS lanza TypeError al
+                     editar so_line porque record.update({is_so_line_edited: true})
+                     no encuentra el campo en this.fields -->
+                <field name="is_so_line_edited" column_invisible="True"/>
                 <field name="attachment_number" string="Nº Adjuntos" optional="show" />
                 <button
                     name="action_get_attachment_view"

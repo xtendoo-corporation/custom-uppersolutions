@@ -13,6 +13,7 @@
         "industry_fsm",
         "hr_timesheet",
         "helpdesk_timesheet",
+        "sale_timesheet",
     ],
     "data": [
         "views/project_task_form_view_uppersolutions_inherit.xml",

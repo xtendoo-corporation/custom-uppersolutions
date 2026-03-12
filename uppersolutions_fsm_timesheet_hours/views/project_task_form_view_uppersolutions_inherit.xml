@@ -42,6 +42,7 @@
                             <field name="helpdesk_ticket_id" column_invisible="True" />
                             <field name="name" optional="show" required="0"
                                 readonly="readonly_timesheet" />
+                            <field name="is_so_line_edited" column_invisible="True" />
                             <field name="so_line" widget="so_line_field" optional="show"
                                 options="{'no_create': True, 'no_open': True}"
                                 context="{'create': False, 'edit': False, 'delete': False}"
