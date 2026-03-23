@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="timesheet_view_tree_user_inherit" model="ir.ui.view">
+        <field name="name">account.analytic.line.view.list.with.user.inherit</field>
+        <field name="model">account.analytic.line</field>
+        <field name="inherit_id" ref="hr_timesheet.timesheet_view_tree_user" />
+        <field name="arch" type="xml">
+            <!-- Add a button to open the task -->
+            <xpath expr="//field[@name='task_id']" position="after">
+                <button name="action_open_task" type="object" icon="fa-arrow-right"
+                    title="Open Task" invisible="not task_id" class="btn btn-link" />
+            </xpath>
+
+        </field>
+    </record>
+</odoo>
