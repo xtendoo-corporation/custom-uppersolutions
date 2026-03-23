@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="helpdesk_ticket_view_form_inherit_uppersolutions" model="ir.ui.view">
+        <field name="name">helpdesk.ticket.form.inherit.uppersolutions</field>
+        <field name="model">helpdesk.ticket</field>
+        <field name="inherit_id" ref="helpdesk_sale_timesheet.helpdesk_ticket_view_form_inherit_helpdesk_sale_timesheet"/>
+        <field name="arch" type="xml">
+            <!-- project_id is originally invisible="1" in helpdesk_timesheet, 
+                 we make it visible right above sale_line_id (which is added right after project_id) -->
+            <xpath expr="//field[@name='project_id']" position="attributes">
+                <attribute name="invisible">0</attribute>
+                <attribute name="readonly">0</attribute>
+                <attribute name="string">Proyecto</attribute>
+                <!-- Only allow projects from the ticket's customer -->
+                <attribute name="domain">[('partner_id', '=', partner_id)]</attribute>
+            </xpath>
+            <xpath expr="//field[@name='project_id']" position="after">
+                <field name="sale_order_id" invisible="1"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
