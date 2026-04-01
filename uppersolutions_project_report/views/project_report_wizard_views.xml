@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_uppersolutions_project_report_wizard_form" model="ir.ui.view">
+        <field name="name">uppersolutions.project.report.wizard.form</field>
+        <field name="model">uppersolutions.project.report.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Reporte de proyectos">
+                <group>
+                    <group>
+                        <field name="date_start"/>
+                        <field name="date_end"/>
+                    </group>
+                </group>
+                <group invisible="not file_data">
+                    <field name="file_name" invisible="1"/>
+                    <field name="file_data" filename="file_name" readonly="1"/>
+                </group>
+                <footer>
+                    <button
+                        name="action_generate_xlsx"
+                        string="Exportar Excel"
+                        type="object"
+                        class="btn-primary"
+                    />
+                    <button string="Cancelar" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_uppersolutions_project_report_wizard" model="ir.actions.act_window">
+        <field name="name">Reporte de proyectos</field>
+        <field name="res_model">uppersolutions.project.report.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_uppersolutions_project_report_wizard_form"/>
+        <field name="target">new</field>
+        <field name="context">{}</field>
+    </record>
+
+    <menuitem
+        id="menu_uppersolutions_project_report"
+        name="Reporte de proyectos"
+        parent="sale.menu_sale_report"
+        action="action_uppersolutions_project_report_wizard"
+        groups="sales_team.group_sale_manager"
+        sequence="50"
+    />
+</odoo>
+
