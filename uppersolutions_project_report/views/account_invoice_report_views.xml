@@ -7,7 +7,7 @@
                 <tr>
                     <th class="text-start"><span>Fecha</span></th>
                     <th class="text-start"><span>Descripción</span></th>
-                    <th class="text-start"><span>Ticket / Tarea</span></th>
+                    <th class="text-start"><span>Ticket / Pedido</span></th>
                     <th class="text-end"><span>Tiempo dedicado</span></th>
                 </tr>
             </thead>
@@ -23,9 +23,9 @@
                         <t t-set="timesheet_record_info" t-value="''"/>
                         <t t-if="'helpdesk_ticket_id' in line._fields and line.helpdesk_ticket_id" t-set="timesheet_record_info" t-value="line.helpdesk_ticket_id.display_name"/>
                         <t t-elif="line.task_id and 'helpdesk_ticket_id' in line.task_id._fields and line.task_id.helpdesk_ticket_id" t-set="timesheet_record_info" t-value="line.task_id.helpdesk_ticket_id.display_name"/>
-                        <t t-elif="line.task_id" t-set="timesheet_record_info" t-value="line.task_id.sudo().name"/>
+                        <t t-elif="line.so_line and line.so_line.order_id" t-set="timesheet_record_info" t-value="line.so_line.order_id.name"/>
                         <t t-elif="line.project_id" t-set="timesheet_record_info" t-value="line.project_id.sudo().name"/>
-                        <span t-out="timesheet_record_info">Ticket o tarea</span>
+                        <span t-out="timesheet_record_info">Ticket o pedido</span>
                     </td>
                     <td class="text-end">
                         <span t-if="not is_uom_day" t-field="line.unit_amount" t-options="{'widget': 'duration', 'digital': True, 'unit': 'hour', 'round': 'minute'}">01:00</span>
