@@ -66,6 +66,13 @@ class UpperSolutionsProjectReportWizard(models.TransientModel):
             self.date_end.strftime("%Y%m%d"),
         )
 
+    def _formula_cell(self, formula, result):
+        self.ensure_one()
+        return {
+            "formula": formula,
+            "result": result,
+        }
+
     def _get_project_name_from_order(self, order):
         self.ensure_one()
         project_names = []
@@ -90,6 +97,7 @@ class UpperSolutionsProjectReportWizard(models.TransientModel):
         travel_amount = 0.0
         diets_amount = 0.0
         hours_qty = 0.0
+        service_amount = 0.0
         subcontracting_amount = 0.0
 
         valid_lines = order.order_line.filtered(
@@ -105,9 +113,13 @@ class UpperSolutionsProjectReportWizard(models.TransientModel):
             category = line.product_id.categ_id
             is_hour_category = bool(category and category.is_hour_category)
             is_travel_category = bool(category and category.is_travel_category)
+            is_service_product = (
+                getattr(line.product_id, "detailed_type", False) == "service"
+                or getattr(line.product_id, "type", False) == "service"
+            )
 
             print(
-                "[uppersolutions_project_report] Línea %s | producto=%s | categoría=%s | subtotal=%s | qty_invoiced=%s | horas=%s | desplazamiento=%s"
+                "[uppersolutions_project_report] Línea %s | producto=%s | categoría=%s | subtotal=%s | qty_invoiced=%s | horas=%s | desplazamiento=%s | servicio=%s"
                 % (
                     line.id,
                     line.product_id.display_name,
@@ -116,6 +128,7 @@ class UpperSolutionsProjectReportWizard(models.TransientModel):
                     line.qty_invoiced,
                     is_hour_category,
                     is_travel_category,
+                    is_service_product,
                 )
             )
 
@@ -123,10 +136,12 @@ class UpperSolutionsProjectReportWizard(models.TransientModel):
                 hours_qty += line.qty_invoiced or 0.0
             elif is_travel_category:
                 travel_amount += line.price_subtotal or 0.0
+            elif is_service_product:
+                service_amount += line.price_subtotal or 0.0
             else:
                 materials_amount += line.price_subtotal or 0.0
 
-        hour_cost_amount = hours_qty * 45.0
+        hour_cost_amount = service_amount + (hours_qty * 45.0)
         total_budget_amount = (
             materials_amount
             + travel_amount
@@ -140,6 +155,7 @@ class UpperSolutionsProjectReportWizard(models.TransientModel):
             "travel_amount": round(travel_amount, 2),
             "diets_amount": round(diets_amount, 2),
             "hours_qty": round(hours_qty, 2),
+            "service_amount": round(service_amount, 2),
             "hour_cost_amount": round(hour_cost_amount, 2),
             "subcontracting_amount": round(subcontracting_amount, 2),
             "total_budget_amount": round(total_budget_amount, 2),
@@ -179,10 +195,43 @@ class UpperSolutionsProjectReportWizard(models.TransientModel):
         )
 
         rows = []
-        trailing_empty_columns = [""] * (len(self.REPORT_COLUMNS) - 13)
         for order in sale_orders:
+            excel_row = len(rows) + 3
             project_name = self._get_project_name_from_order(order)
             budget_values = self._get_budget_values_from_order(order)
+            service_amount = budget_values["service_amount"]
+            total_budget_result = budget_values["total_budget_amount"]
+            real_hour_result = round(service_amount, 2)
+
+            budget_hour_formula = "=%.2f+J%s*45" % (service_amount, excel_row)
+            total_budget_formula = "=G%s+H%s+I%s+K%s+L%s" % (
+                excel_row,
+                excel_row,
+                excel_row,
+                excel_row,
+                excel_row,
+            )
+            real_hour_formula = "=%.2f+Q%s*45" % (service_amount, excel_row)
+            total_real_formula = "=N%s+O%s+P%s+R%s+S%s" % (
+                excel_row,
+                excel_row,
+                excel_row,
+                excel_row,
+                excel_row,
+            )
+            difference_formula = "=V%s-(R%s+N%s+S%s)" % (
+                excel_row,
+                excel_row,
+                excel_row,
+                excel_row,
+            )
+            margin_formula = "=V%s/(N%s+R%s+S%s)-100%%" % (
+                excel_row,
+                excel_row,
+                excel_row,
+                excel_row,
+            )
+
             row = [
                 order.name or order.client_order_ref or "",
                 order.partner_id.display_name or "",
@@ -194,14 +243,24 @@ class UpperSolutionsProjectReportWizard(models.TransientModel):
                 budget_values["travel_amount"],
                 budget_values["diets_amount"],
                 budget_values["hours_qty"],
-                budget_values["hour_cost_amount"],
+                self._formula_cell(budget_hour_formula, budget_values["hour_cost_amount"]),
                 budget_values["subcontracting_amount"],
-                budget_values["total_budget_amount"],
-                *trailing_empty_columns,
+                self._formula_cell(total_budget_formula, total_budget_result),
+                "",
+                "",
+                "",
+                "",
+                self._formula_cell(real_hour_formula, real_hour_result),
+                "",
+                self._formula_cell(total_real_formula, ""),
+                "",
+                "",
+                self._formula_cell(difference_formula, ""),
+                self._formula_cell(margin_formula, ""),
             ]
             print(
                 "[uppersolutions_project_report] Fila construida para pedido %s (%s columnas): %s"
-                % (order.name, len(row), row[:13])
+                % (order.name, len(row), row)
             )
             rows.append(row)
 
@@ -241,6 +300,10 @@ class UpperSolutionsProjectReportWizard(models.TransientModel):
         cell_format = workbook.add_format({
             "border": 1,
         })
+        margin_cell_format = workbook.add_format({
+            "border": 1,
+            "num_format": "0.00%",
+        })
 
         worksheet.set_row(0, 30)
         worksheet.set_row(1, 24)
@@ -273,7 +336,19 @@ class UpperSolutionsProjectReportWizard(models.TransientModel):
 
         for row_index, row_values in enumerate(report_rows, start=2):
             for col_index, value in enumerate(row_values):
-                worksheet.write(row_index, col_index, value or "", cell_format)
+                current_format = margin_cell_format if col_index == 23 else cell_format
+                if isinstance(value, dict) and value.get("formula"):
+                    worksheet.write_formula(
+                        row_index,
+                        col_index,
+                        value["formula"],
+                        current_format,
+                        value.get("result", 0),
+                    )
+                elif isinstance(value, str) and value.startswith("="):
+                    worksheet.write_formula(row_index, col_index, value, current_format)
+                else:
+                    worksheet.write(row_index, col_index, value or "", current_format)
 
         workbook.close()
         output.seek(0)
