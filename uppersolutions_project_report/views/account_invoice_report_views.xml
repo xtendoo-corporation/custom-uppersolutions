@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <template id="invoice_timesheet_table_invoice_style_uppersolutions">
+        <t t-set="is_uom_day" t-value="lines._is_timesheet_encode_uom_day()"/>
+        <table class="o_has_total_table table o_main_table table-borderless mb-0">
+            <thead style="display: table-row-group;">
+                <tr>
+                    <th class="text-start"><span>Fecha</span></th>
+                    <th class="text-start"><span>Descripción</span></th>
+                    <th class="text-start"><span>Tarea</span></th>
+                    <th class="text-end"><span>Tiempo dedicado</span></th>
+                </tr>
+            </thead>
+            <tbody class="invoice_tbody">
+                <tr t-foreach="lines" t-as="line">
+                    <td>
+                        <span t-field="line.date">2026-03-11</span>
+                    </td>
+                    <td>
+                        <span t-field="line.name" t-options="{'widget': 'text'}">Descripción del parte</span>
+                    </td>
+                    <td>
+                        <t t-set="timesheet_record_info" t-value="line.project_id.sudo().name or ''"/>
+                        <t t-if="line.task_id" t-set="timesheet_record_info" t-value="'%s / %s' % (timesheet_record_info, line.task_id.sudo().name) if timesheet_record_info else line.task_id.sudo().name"/>
+                        <span t-out="timesheet_record_info">Proyecto / Tarea</span>
+                    </td>
+                    <td class="text-end">
+                        <span t-if="not is_uom_day" t-field="line.unit_amount" t-options="{'widget': 'duration', 'digital': True, 'unit': 'hour', 'round': 'minute'}">01:00</span>
+                        <span t-else="" t-esc="line._get_timesheet_time_day()" t-options="{'widget': 'timesheet_uom'}">1 day</span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </template>
+
+    <template id="invoice_timesheet_append_block_uppersolutions">
+        <t t-set="doc_name" t-value="o.name"/>
+        <t t-if="doc_name == '/'" t-set="doc_name">Draft</t>
+        <div class="mt-4" id="uppersolutions_invoice_timesheets">
+            <h5 class="text-center">
+                <br/>
+                <span>
+                    Relación partes de horas
+                </span>
+            </h5>
+            <t t-set="lines" t-value="o.timesheet_ids"/>
+            <t t-set="show_project" t-value="true"/>
+            <t t-set="show_task" t-value="true"/>
+            <t t-call="uppersolutions_project_report.invoice_timesheet_table_invoice_style_uppersolutions"/>
+        </div>
+    </template>
+
+    <template id="report_invoice_document_inherit_uppersolutions_hour_parts" inherit_id="account.report_invoice_document">
+        <xpath expr="//div[@id='payment_term']" position="after">
+            <t t-if="o.timesheet_ids">
+                <t t-call="uppersolutions_project_report.invoice_timesheet_append_block_uppersolutions"/>
+            </t>
+        </xpath>
+    </template>
+</odoo>
+

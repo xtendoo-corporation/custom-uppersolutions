@@ -10,11 +10,18 @@
         "python": ["xlsxwriter"],
     },
     "depends": [
+        "account",
+        "hr_timesheet",
+        "product",
+        "sale_timesheet",
         "sale_management",
         "project",
+        "sale_project",
     ],
     "data": [
         "security/ir.model.access.csv",
+        "views/account_invoice_report_views.xml",
+        "views/product_category_views.xml",
         "views/project_report_wizard_views.xml",
     ],
     "installable": True,
