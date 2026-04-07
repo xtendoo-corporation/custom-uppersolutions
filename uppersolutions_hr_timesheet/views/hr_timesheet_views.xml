@@ -1,14 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <record id="timesheet_view_tree_user_inherit" model="ir.ui.view">
-        <field name="name">account.analytic.line.view.list.with.user.inherit</field>
+    <record id="timesheet_line_tree_inherit" model="ir.ui.view">
+        <field name="name">account.analytic.line.list.inherit.uppersolutions</field>
         <field name="model">account.analytic.line</field>
-        <field name="inherit_id" ref="hr_timesheet.timesheet_view_tree_user" />
+        <field name="inherit_id" ref="hr_timesheet.hr_timesheet_line_tree" />
         <field name="priority">30</field>
         <field name="arch" type="xml">
-            <xpath expr="//field[@name='helpdesk_ticket_id' and not(@column_invisible)]" position="replace">
-                <field name="display_helpdesk_ticket_id" optional="hide"
-                    groups="helpdesk_timesheet.group_use_helpdesk_timesheet" />
+            <xpath expr="//field[@name='date']" position="before">
+                <field name="display_ticket_date" readonly="1" />
+            </xpath>
+
+            <xpath expr="//field[@name='date']" position="attributes">
+                <attribute name="column_invisible">True</attribute>
             </xpath>
 
             <!-- Add a button to open the task -->
@@ -16,7 +19,19 @@
                 <button name="action_open_task" type="object" icon="fa-arrow-right"
                     title="Open Task" invisible="not task_id" class="btn btn-link" />
             </xpath>
+        </field>
+    </record>
 
+    <record id="timesheet_line_tree_helpdesk_inherit" model="ir.ui.view">
+        <field name="name">account.analytic.line.list.helpdesk.inherit.uppersolutions</field>
+        <field name="model">account.analytic.line</field>
+        <field name="inherit_id" ref="helpdesk_timesheet.hr_timesheet_line_tree_my_inherit_helpdesk_timesheet" />
+        <field name="priority">30</field>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='helpdesk_ticket_id' and not(@column_invisible)]" position="replace">
+                <field name="display_helpdesk_ticket_id" optional="hide"
+                    groups="helpdesk_timesheet.group_use_helpdesk_timesheet" />
+            </xpath>
         </field>
     </record>
 </odoo>
