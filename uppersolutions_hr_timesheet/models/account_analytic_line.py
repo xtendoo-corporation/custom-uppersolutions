@@ -1,7 +1,19 @@
-from odoo import models
+from odoo import api, fields, models
 
 class AccountAnalyticLine(models.Model):
     _inherit = 'account.analytic.line'
+
+    display_helpdesk_ticket_id = fields.Many2one(
+        'helpdesk.ticket',
+        string='Ticket',
+        compute='_compute_display_helpdesk_ticket_id',
+        readonly=True,
+    )
+
+    @api.depends('helpdesk_ticket_id', 'task_id', 'task_id.helpdesk_ticket_id')
+    def _compute_display_helpdesk_ticket_id(self):
+        for line in self:
+            line.display_helpdesk_ticket_id = line.helpdesk_ticket_id or line.task_id.helpdesk_ticket_id
 
     def action_open_task(self):
         self.ensure_one()

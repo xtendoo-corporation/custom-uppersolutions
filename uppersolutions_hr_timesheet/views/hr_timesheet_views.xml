@@ -4,7 +4,13 @@
         <field name="name">account.analytic.line.view.list.with.user.inherit</field>
         <field name="model">account.analytic.line</field>
         <field name="inherit_id" ref="hr_timesheet.timesheet_view_tree_user" />
+        <field name="priority">30</field>
         <field name="arch" type="xml">
+            <xpath expr="//field[@name='helpdesk_ticket_id' and not(@column_invisible)]" position="replace">
+                <field name="display_helpdesk_ticket_id" optional="hide"
+                    groups="helpdesk_timesheet.group_use_helpdesk_timesheet" />
+            </xpath>
+
             <!-- Add a button to open the task -->
             <xpath expr="//field[@name='task_id']" position="after">
                 <button name="action_open_task" type="object" icon="fa-arrow-right"
