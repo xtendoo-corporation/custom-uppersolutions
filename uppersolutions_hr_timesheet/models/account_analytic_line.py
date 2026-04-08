@@ -1,5 +1,6 @@
 from odoo import api, fields, models
 
+
 class AccountAnalyticLine(models.Model):
     _inherit = 'account.analytic.line'
 
@@ -21,6 +22,7 @@ class AccountAnalyticLine(models.Model):
             line.display_helpdesk_ticket_id = line.helpdesk_ticket_id or line.task_id.helpdesk_ticket_id
 
     @api.depends(
+        'start_hour',
         'date',
         'helpdesk_ticket_id.estimated_date',
         'task_id.helpdesk_ticket_id.estimated_date',
@@ -28,7 +30,11 @@ class AccountAnalyticLine(models.Model):
     def _compute_display_ticket_date(self):
         for line in self:
             ticket = line.helpdesk_ticket_id or line.task_id.helpdesk_ticket_id
-            line.display_ticket_date = ticket.estimated_date or line.date
+            line.display_ticket_date = (
+                fields.Datetime.to_datetime(line.start_hour).date()
+                if line.start_hour
+                else ticket.estimated_date or line.date
+            )
 
     def action_open_task(self):
         self.ensure_one()
