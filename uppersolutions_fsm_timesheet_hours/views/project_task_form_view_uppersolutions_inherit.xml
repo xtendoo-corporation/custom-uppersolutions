@@ -26,9 +26,9 @@
                             <field name="readonly_timesheet" column_invisible="True" />
                             <field name="date" readonly="readonly_timesheet or timer_start" />
                             <field optional="show" name="start_hour"
-                                options="{&quot;numeric&quot;:true}" />
+                                options="{&quot;numeric&quot;:true,&quot;rounding&quot;:15}" />
                             <field optional="show" name="final_hour"
-                                options="{&quot;numeric&quot;:true}"
+                                options="{&quot;numeric&quot;:true,&quot;rounding&quot;:15}"
                                 string="Hora Fin" />
                             <field name="employee_id" column_invisible="0"
                                 readonly="readonly_timesheet" required="1"
