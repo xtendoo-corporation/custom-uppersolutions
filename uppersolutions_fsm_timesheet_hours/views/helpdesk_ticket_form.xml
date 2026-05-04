@@ -1,5 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+    <record id="helpdesk_ticket_view_form_partner_company_only" model="ir.ui.view">
+        <field name="name">helpdesk.ticket.form.partner.company.only</field>
+        <field name="model">helpdesk.ticket</field>
+        <field name="inherit_id" ref="helpdesk.helpdesk_ticket_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='partner_id']" position="attributes">
+                <attribute name="domain">['&amp;', ('is_company', '=', True), '|', ('company_id', '=', False), ('company_id', '=', company_id)]</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="helpdesk_ticket_view_tree_partner_company_only" model="ir.ui.view">
+        <field name="name">helpdesk.ticket.tree.partner.company.only</field>
+        <field name="model">helpdesk.ticket</field>
+        <field name="inherit_id" ref="helpdesk.helpdesk_tickets_view_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='partner_id']" position="attributes">
+                <attribute name="domain">['&amp;', ('is_company', '=', True), '|', ('company_id', '=', False), ('company_id', '=', company_id)]</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="helpdesk_ticket_quick_create_partner_company_only" model="ir.ui.view">
+        <field name="name">helpdesk.ticket.quick.create.partner.company.only</field>
+        <field name="model">helpdesk.ticket</field>
+        <field name="inherit_id" ref="helpdesk.quick_create_ticket_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='partner_id']" position="attributes">
+                <attribute name="domain">['&amp;', ('is_company', '=', True), '|', ('company_id', '=', False), ('company_id', '=', company_id)]</attribute>
+            </xpath>
+        </field>
+    </record>
+
     <record id="helpdesk_ticket_view_form_inherit_uppersolutions" model="ir.ui.view">
         <field name="name">helpdesk.ticket.form.inherit.uppersolutions</field>
         <field name="model">helpdesk.ticket</field>
