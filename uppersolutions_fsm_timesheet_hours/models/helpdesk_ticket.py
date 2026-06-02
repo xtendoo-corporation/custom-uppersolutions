@@ -1,6 +1,8 @@
 # Copyright 2026 UpperSolutions
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
+from ast import literal_eval
+
 from odoo import fields, models
 
 class HelpdeskTicket(models.Model):
@@ -36,3 +38,30 @@ class HelpdeskTicket(models.Model):
         string="PRL Necesario",
         readonly=True,
     )
+
+    def action_generate_fsm_task(self):
+        action = super().action_generate_fsm_task()
+        context = action.get("context", {})
+        if isinstance(context, str):
+            context = literal_eval(context)
+        action["context"] = {
+            **context,
+            "copy_helpdesk_ticket_attachments_to_fsm_task": True,
+        }
+        return action
+
+    def _copy_attachments_to_fsm_task(self, task):
+        self.ensure_one()
+        if not task:
+            return
+
+        attachments = self.env["ir.attachment"].search([
+            ("res_model", "=", self._name),
+            ("res_id", "=", self.id),
+        ])
+        for attachment in attachments:
+            attachment.copy({
+                "res_model": task._name,
+                "res_id": task.id,
+            })
+

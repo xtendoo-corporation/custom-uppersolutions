@@ -11,6 +11,7 @@
     "category": "Field Service",
     "depends": [
         "industry_fsm",
+        "helpdesk_fsm",
         "hr_timesheet",
         "helpdesk_timesheet",
         "sale_timesheet",
